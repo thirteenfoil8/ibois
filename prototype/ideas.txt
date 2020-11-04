@@ -1,0 +1,21 @@
+Monochrome cameras
+CMOS CAmeras are better because faster
+https://www.qualitymag.com/articles/93861-how-to-choose-a-machine-vision-camera
+
+https://www.logitech.com/fr-ch/product/hd-pro-webcam-c920 
+
+Add a lamp beside the camera to increase the light.
+
+https://www.youtube.com/watch?time_continue=26&v=IsXWrcB_Hvs&feature=emb_title&ab_channel=SergioGarrido
+
+Look at the code from the other student and looking at the treshhold can increase the accuracy
+-->>https://docs.opencv.org/3.4/d9/d53/aruco_8hpp.html
+
+https://docs.opencv.org/master/d5/dae/tutorial_aruco_detection.html
+
+DEPTH CAMERA
+
+
+Camera_calibration.py regarder les paramètres et être sûr que tout est bon 
+
+Look at kinects
