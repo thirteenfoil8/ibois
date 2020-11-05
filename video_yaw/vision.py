@@ -11,7 +11,7 @@ def take_picture(nb_image):
     camera = PiCamera(resolution='1080p')
     camera.start_preview()
     for i in range(nb_image):
-        camera.capture('picture/{n}.jpg'.format(n=i))
+        camera.capture('picture/{n}.png'.format(n=i))
         sleep(0.25)
     
     camera.stop_preview()
@@ -31,7 +31,7 @@ def find_angle(image,n,gap,verbose=False):
 #     img_before = cv2.resize(img_before, dim, interpolation = cv2.INTER_AREA)
     img_gray = cv2.cvtColor(img_before, cv2.COLOR_BGR2GRAY)
     img_gray = cv2.GaussianBlur(img_gray, (5,5), 0)
-    cv2.imwrite('edge/blur.jpg'.format(n=n),img_gray)
+    cv2.imwrite('edge/blur.png'.format(n=n),img_gray)
     
     tresh = np.linspace(150,200,30,dtype = int)
     tresholds = []
@@ -47,7 +47,7 @@ def find_angle(image,n,gap,verbose=False):
         
         img_edges = cv2.Canny(img_gray, treshold[0], treshold[1])
         if verbose:
-            cv2.imwrite('edge/edge_{t1}_{t2}.jpg'.format(n=n,t1 = treshold[0],t2 =treshold[1] ), img_edges)  
+            cv2.imwrite('edge/edge_{t1}_{t2}.png'.format(n=n,t1 = treshold[0],t2 =treshold[1] ), img_edges)  
         lines = cv2.HoughLinesP(img_edges, 1, np.pi/180.0, 100, minLineLength=50, maxLineGap=gap)
         angles = []
         
@@ -60,7 +60,7 @@ def find_angle(image,n,gap,verbose=False):
             continue
         
         if verbose:
-            cv2.imwrite('line/line_{t1}_{t2}.jpg'.format(n=n,t1 = treshold[0],t2 =treshold[1] ), img_before)
+            cv2.imwrite('line/line_{t1}_{t2}.png'.format(n=n,t1 = treshold[0],t2 =treshold[1] ), img_before)
 
         median_angle = np.median(angles)
         angles_f.append(median_angle)
@@ -104,7 +104,7 @@ def compute_angle(nb_image,gap=5,verbose=False):
     n = 0
     take_picture(nb_image)
     for i in range(nb_image):
-        image = 'picture/{i}.jpg'.format(i=i)
+        image = 'picture/{i}.png'.format(i=i)
         angles_find=find_angle(image,n,gap,verbose)
         final_angle_tmp = final_angles(angles_find)
         angles.append(final_angle_tmp)
@@ -114,13 +114,13 @@ def compute_angle(nb_image,gap=5,verbose=False):
     print(final_angle)
     if final_angle != -1000:
         img_rotated = rotate_image(cv2.imread(image), final_angle)
-        cv2.imwrite('picture/rotated.jpg'.format(n=n), img_rotated) 
+        cv2.imwrite('picture/rotated.png'.format(n=n), img_rotated) 
     else:
         img_rotated = cv2.imread(image)
-        cv2.imwrite('picture/rotated.jpg'.format(n=n), img_rotated)
+        cv2.imwrite('picture/rotated.png'.format(n=n), img_rotated)
     if verbose:
-        img_base = mpimg.imread('picture/{n}.jpg'.format(n=n))
-        img = mpimg.imread('picture/rotated.jpg')
+        img_base = mpimg.imread('picture/{n}.png'.format(n=n))
+        img = mpimg.imread('picture/rotated.png')
         fig, axs = plt.subplots(1, 2, figsize=(18, 6), sharey=True)
         fig.suptitle('Rotate the image')
         axs[0].imshow(img_base)
@@ -133,3 +133,18 @@ import time
 #stime = time.time()
 compute_angle(1,5,True)
 #print(time.time()-stime)
+
+def match_cross():
+    img_rgb = cv2.imread('picture/rotated.png')
+    img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
+    template = cv2.imread('marker_1/cross.png',0)
+    w, h = template.shape[::-1]
+
+    res = cv2.matchTemplate(img_gray,template,cv2.TM_CCOEFF_NORMED)
+    print(len(res))
+    threshold = 0.8
+    loc = np.where( res >= threshold)
+    for pt in zip(*loc[::-1]):
+        cv2.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
+
+    cv2.imwrite('res.png',img_rgb)
