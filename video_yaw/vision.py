@@ -8,7 +8,7 @@ from time import sleep
 
 
 def take_picture(nb_image):
-    camera = PiCamera()
+    camera = PiCamera(resolution='1080p')
     camera.start_preview()
     for i in range(nb_image):
         camera.capture('picture/{n}.jpg'.format(n=i))
@@ -33,10 +33,14 @@ def find_angle(image,n,gap,verbose=False):
     img_gray = cv2.GaussianBlur(img_gray, (5,5), 0)
     cv2.imwrite('edge/blur.jpg'.format(n=n),img_gray)
     
-    tresh = np.linspace(100,250,10)
+    tresh = np.linspace(150,200,30,dtype = int)
     tresholds = []
     for i in tresh:
-        tresholds.append((i//3,i))
+        if i//3 < 80:
+            tresholds.append((80,i))
+        else:
+            tresholds.append((i//3,i))
+            tresholds.append((i,i))
         
         
     for treshold in tresholds:
@@ -97,7 +101,7 @@ def final_angles(angles):
     return median
 def compute_angle(nb_image,gap=5,verbose=False):
     angles= []
-    n = 1
+    n = 0
     take_picture(nb_image)
     for i in range(nb_image):
         image = 'picture/{i}.jpg'.format(i=i)
@@ -125,5 +129,7 @@ def compute_angle(nb_image,gap=5,verbose=False):
         axs[1].axis('off')
                    
     return final_angle
-
-compute_angle(5,5,True)
+import time
+#stime = time.time()
+compute_angle(1,5,True)
+#print(time.time()-stime)
