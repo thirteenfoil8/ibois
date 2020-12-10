@@ -15,7 +15,7 @@ import paramiko
 
 client = paramiko.SSHClient()
 client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-client.connect('192.168.43.99', username='pi', password='ibois')
+client.connect('Mdca632a33460.dyn.epfl.ch', username='pi', password='ibois')
 file = open("data.txt","a")
 def execute_vision(client):
     stdin, stdout, stderr = client.exec_command('cd ibois/vision/ && python3 vision.py')
