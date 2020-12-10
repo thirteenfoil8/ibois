@@ -54,7 +54,6 @@ def getTFminiData(rx,num=1):
 if __name__ == '__main__':
     try:
         i = 1
-        print('try1')
         for rx in rxs:
             pi = pigpio.pi()
             distances[i-1]=getTFminiData(rx,i)
@@ -63,6 +62,5 @@ if __name__ == '__main__':
         print(distances)
 
     except:
-        print('fail')
         pi.bb_serial_read_close(rx)
         pi.stop()
