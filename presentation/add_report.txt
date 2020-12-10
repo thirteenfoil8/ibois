@@ -1,0 +1,2 @@
+Speak about it's better to design a PCB because the breadboard
+is not a good idea for embedded system due to the vibration
