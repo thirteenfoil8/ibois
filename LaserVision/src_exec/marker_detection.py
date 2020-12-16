@@ -19,8 +19,8 @@ client.connect('Mdca632a33460.dyn.epfl.ch', username='pi', password='ibois')
 file = open("../output/camera_data.txt","a")
 def execute_vision(client):
     stdin, stdout, stderr = client.exec_command('cd ibois/LaserVision/vision/ && python3 vision.py')
-    Dx = stdout[0]
-    Dy = stdout[1]
+    Dx = stdout[0].strip('\n')
+    Dy = stdout[1].strip('\n')
     rot = stdout[2].strip('\n')[1:-2]
     file.write('translation_vector: {Dx:.2f} {Dy:.2f}\n'.format(Dx=Dx,Dy=Dy))
     file.write('rotation_angle: {rot:.2f} \n'.format(rot=rot))
