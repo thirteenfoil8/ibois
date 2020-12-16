@@ -18,12 +18,13 @@ client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 client.connect('Mdca632a33460.dyn.epfl.ch', username='pi', password='ibois')
 file = open("../output/camera_data.txt","a")
 def execute_vision(client):
-    stdin, stdout, stderr = client.exec_command('cd ibois/LaserVision/vision/ && python3 vision.py')
-    Dx = stdout[0].strip('\n')
-    Dy = stdout[1].strip('\n')
-    rot = stdout[2].strip('\n')[1:-2]
-    file.write('translation_vector: {Dx:.2f} {Dy:.2f}\n'.format(Dx=Dx,Dy=Dy))
-    file.write('rotation_angle: {rot:.2f} \n'.format(rot=rot))
+    stdin, stdout, stderr = client.exec_command('cd ibois/LaserVision/vision && python3 vision.py')
+    count = 0
+    for line in stdout:
+        str = line.strip('\n')
+        file.write('translation_vector: ' + str[0:13] + '\n' )
+        file.write('rotation_angle: ' + str[15:] + '\n')
+        count+=1
     file.write('marker_id: 7')
 file.truncate(0)
 

@@ -1,2 +1,7 @@
 Speak about it's better to design a PCB because the breadboard
 is not a good idea for embedded system due to the vibration
+
+Calibration::
+
+Get 3 points in the plane of the timber in Unity to generate a reference plane. While it's done,
+We will be able to calibrate the laser w.r.t the reference plane.  
