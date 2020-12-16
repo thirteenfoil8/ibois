@@ -12,11 +12,11 @@ rxs = [RX,RX2,RX3,RX4]
 distances = [0,0,0,0]
 
 def calibration(distances):
-    e = 3
-    cal1 = 13.5 - e
-    cal2 = 20 -e
-    cal3 = 6.25 -e
-    cal4 = 4 -e
+    e = 2.3 #stiffness of the support
+    cal1 = 21+ e
+    cal2 = 21+e
+    cal3 = 21+e
+    cal4 = 21+e
     
     return [distances[0]-cal1,distances[1]-cal2,distances[2]-cal3,distances[3]-cal4]
     
@@ -58,7 +58,7 @@ if __name__ == '__main__':
             pi = pigpio.pi()
             distances[i-1]=getTFminiData(rx,i)
             i+=1
-        distances = calibration(distances)
+        #distances = calibration(distances)
         print(distances)
 
     except:
