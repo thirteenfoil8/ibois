@@ -44,7 +44,7 @@ def detect_circles():
     return circle_params
 
 def get_vector(circle_params):
-    cicle_R = 18.3 #change the true circle radius here
+    circle_R = 18.3 #change the true circle radius here
     K = circle_R/circle_params[2]
     Ix = 540
     Iy = 960
@@ -158,7 +158,6 @@ def compute_angle(nb_image,gap=5,verbose=False):
         
     
     final_angle = np.median(angles)
-    print(final_angle)
     if final_angle != -1000:
         img_rotated = rotate_image(cv2.imread(image), final_angle)
         cv2.imwrite('picture/rotated.png'.format(n=n), img_rotated) 
@@ -174,6 +173,7 @@ def compute_angle(nb_image,gap=5,verbose=False):
         axs[1].imshow(img)
         axs[0].axis('off')
         axs[1].axis('off')
+    return final_angle
     
     
                    
@@ -182,9 +182,11 @@ import time
 #stime = time.time()
 circle_params = detect_circles()
 Dx,Dy = get_vector(circle_params)
-print(Dx,Dy)
-
-compute_angle(1,5)
+Dx = "{:.2f}".format(Dx)
+Dy = "{:.2f}".format(Dy)
+rot = compute_angle(1,5)
+rot = "{:.2f}".format(rot)
+print(Dx,Dy,rot)
 
 #print(circle_params)
 #print(time.time()-stime)
