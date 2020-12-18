@@ -12,11 +12,11 @@ rxs = [RX,RX2,RX3,RX4]
 distances = [0,0,0,0]
 
 def calibration(distances):
-    e = 2.3 #stiffness of the support
-    cal1 = 21+ e
-    cal2 = 21+e
-    cal3 = 21+e
-    cal4 = 21+e
+    e = 0 #stiffness of the support
+    cal1 = 52.5
+    cal2 = 35.2
+    cal3 = 55.4
+    cal4 = 49.5
     
     return [distances[0]-cal1,distances[1]-cal2,distances[2]-cal3,distances[3]-cal4]
     
@@ -28,7 +28,7 @@ def getTFminiData(rx,num=1):
     pi.bb_serial_read_open(rx, 115200)
     loop = 0
     dists = []
-    while loop<100:
+    while loop<50:
     #print("#############")
         time.sleep(0.1)    #change the value if needed
         (count, recv) = pi.bb_serial_read(rx)
@@ -49,6 +49,11 @@ def getTFminiData(rx,num=1):
                         loop += 1
     pi.bb_serial_read_close(rx)
     pi.stop()
+    median =np.median(dists)
+    for i in dists:
+        if np.abs(i-median)>1:
+            dists.remove(i)      
+    median = np.median(dists)
     return np.mean(dists)
 
 if __name__ == '__main__':
@@ -58,7 +63,8 @@ if __name__ == '__main__':
             pi = pigpio.pi()
             distances[i-1]=getTFminiData(rx,i)
             i+=1
-        #distances = calibration(distances)
+        distances = calibration(distances)
+            
         print(distances)
 
     except:

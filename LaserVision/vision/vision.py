@@ -7,10 +7,6 @@ from picamera import PiCamera
 from time import sleep
 
 
-
-        
-       
-            
 def take_picture(nb_image):
     camera = PiCamera(resolution='1080p')
     camera.start_preview()
@@ -19,42 +15,50 @@ def take_picture(nb_image):
         sleep(0.25)
     
     camera.stop_preview()
+    sleep(0.1)
     
 def detect_circles():
-    
-    img = cv2.imread('picture/0.png')
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    blurred = cv2.medianBlur(gray, 25)
-    minDist = 100
-    param1 = 30 #500
-    param2 = 50 #200 #smaller value-> more false circles
-    minRadius = 5
-    maxRadius = 100 #10
+    flag = 1
+    while flag:
+        img = cv2.imread('picture/0.png')
+        img = cv2.resize(img, (img.shape[1]//2, img.shape[0]//2))
+        #gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        #blurred = change_contrast(gray)
+        img = cv2.detailEnhance(img, sigma_s=50, sigma_r=0.9)
+        blurred = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        blurred=cv2.GaussianBlur(blurred, (5,5), 0)
+        minDist = 400
+        param1 = 15 #500
+        param2 = 60 #200 #smaller value-> more false circles
+        minRadius = 30
+        maxRadius = 90#10
 
-    # docstring of HoughCircles: HoughCircles(image, method, dp, minDist[, circles[, param1[, param2[, minRadius[, maxRadius]]]]]) -> circles
-    circles = cv2.HoughCircles(blurred, cv2.HOUGH_GRADIENT, 1, minDist, param1=param1, param2=param2, minRadius=minRadius, maxRadius=maxRadius)
-    if circles is not None:
-        circles = np.uint16(np.around(circles))
+        # docstring of HoughCircles: HoughCircles(image, method, dp, minDist[, circles[, param1[, param2[, minRadius[, maxRadius]]]]]) -> circles
         
-        for i in circles[0,:]:
-            circle_params= [i[0], i[1],i[2]]
-            cv2.circle(img, (i[0], i[1]), i[2], (0, 255, 0), 2)
-    # Show result for testing:
-    cv2.imwrite("picture/circle.png", img)
-    return circle_params
+        circles = cv2.HoughCircles(blurred, cv2.HOUGH_GRADIENT, 1, minDist, param1=param1, param2=param2, minRadius=minRadius, maxRadius=maxRadius)
+        circle_params = [0,0,0]
+        
+        if circles is not None:
+            circles = np.uint16(np.around(circles))
+            if len(circles) ==1:
+                flag = 0
+                for i in circles[0,:]:
+                    circle_params= [i[0], i[1],i[2]]
+                    cv2.circle(img, (i[0], i[1]), i[2], (0, 255, 0), 2)
+                # Show result for testing:
+                cv2.imwrite("picture/circle.png", img)
+    return circle_params,img
 
-def get_vector(circle_params):
+def get_vector(circle_params,img):
     circle_R = 18.3 #change the true circle radius here
     K = circle_R/circle_params[2]
-    Ix = 540
-    Iy = 960
-    Dx = (circle_params[0]-Ix)*K
-    Dy = (circle_params[1]-Iy)*K
+    Ix = img.shape[1]
+    Iy = img.shape[2]
+    Dx = -(circle_params[0]-Ix)*K
+    Dy = -(circle_params[1]-Iy)*K
     return Dx,Dy
     
 def change_contrast(img):
-    #g_kernel = cv2.getGaborKernel((21, 21), 8.0, np.pi/4, 10.0, 0.5, 0, ktype=cv2.CV_32F)
-    #img = cv2.filter2D(img, cv2.CV_8UC3, g_kernel)
     image_enhanced = cv2.equalizeHist(img)
     return image_enhanced
 
@@ -73,16 +77,17 @@ def find_angle(image,n,gap,verbose=False,enhanced=True):
 #     dim = (width, height)
 #     img_before = cv2.resize(img_before, dim, interpolation = cv2.INTER_AREA)
     img_gray = cv2.cvtColor(img_before, cv2.COLOR_BGR2GRAY)
+    if enhanced ==False:
+        img_gray = cv2.GaussianBlur(img_gray, (5,5), 0)
     if enhanced ==True:
         img_gray = change_contrast(img_gray)
-    img_gray = cv2.GaussianBlur(img_gray, (5,5), 0)
     cv2.imwrite('edge/blur.png'.format(n=n),img_gray)
     
-    tresh = np.linspace(50,150,30,dtype = int)
+    tresh = np.linspace(50,250,30,dtype = int)
     tresholds = []
     for i in tresh:
-        if i//3 < 30:
-            tresholds.append((30,i))
+        if i//2 < 80:
+            tresholds.append((80,i))
         else:
             tresholds.append((i//3,i))
         
@@ -91,7 +96,7 @@ def find_angle(image,n,gap,verbose=False,enhanced=True):
         
         img_edges = cv2.Canny(img_gray, treshold[0], treshold[1])
         if verbose:
-            cv2.imwrite('edge/edge_{t1}_{t2}.png'.format(n=n,t1 = treshold[0],t2 =treshold[1] ), img_edges)  
+            cv2.imwrite('edge/edge_{t1}_{t2}.png'.format(t1 = treshold[0],t2 =treshold[1] ), img_edges)  
         lines = cv2.HoughLinesP(img_edges, 1, np.pi/180.0, 100, minLineLength=50, maxLineGap=gap)
         angles = []
         
@@ -100,11 +105,11 @@ def find_angle(image,n,gap,verbose=False,enhanced=True):
                 cv2.line(img_before, (x1, y1), (x2, y2), (255, 0, 0), 3)
                 angle = math.degrees(math.atan2(y2 - y1, x2 - x1))
                 angles.append(angle)
-        except Exception as e:
+        except Exception :
             continue
         
         if verbose:
-            cv2.imwrite('line/line_{t1}_{t2}.png'.format(n=n,t1 = treshold[0],t2 =treshold[1] ), img_before)
+            cv2.imwrite('line/line_{t1}_{t2}.png'.format(t1 = treshold[0],t2 =treshold[1] ), img_before)
 
         median_angle = np.median(angles)
         angles_f.append(median_angle)
@@ -151,8 +156,8 @@ def compute_angle(nb_image,gap=5,verbose=False):
         angles_find=find_angle(image,n,gap,verbose)
             
         final_angle_tmp = final_angles(angles_find)
-        while final_angle_tmp  ==-1000:
-            angles_find=find_angle(image,n,gap,verbose,True)
+        while final_angle_tmp  ==-1000 or final_angle_tmp ==0:
+            angles_find=find_angle(image,n,gap,verbose,False)
             final_angle_tmp = final_angles(angles_find)
         angles.append(final_angle_tmp)
         
@@ -175,18 +180,17 @@ def compute_angle(nb_image,gap=5,verbose=False):
         axs[1].axis('off')
     return final_angle
     
-    
-                   
-    return final_angle
 import time
 #stime = time.time()
-circle_params = detect_circles()
-Dx,Dy = get_vector(circle_params)
+import pandas as pd
+Dxs=[]
+Dys=[]
+rots=[]
+rot = compute_angle(1,5,False)
+circle,img = detect_circles()
+Dx,Dy = get_vector(circle,img)
 Dx = "{:.2f}".format(Dx)
 Dy = "{:.2f}".format(Dy)
-rot = compute_angle(1,5)
 rot = "{:.2f}".format(rot)
-print(Dx,Dy,rot)
 
-#print(circle_params)
-#print(time.time()-stime)
+print(Dx+','+Dy+','+rot)      
