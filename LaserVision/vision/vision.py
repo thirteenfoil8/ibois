@@ -193,4 +193,4 @@ Dx = "{:.2f}".format(Dx)
 Dy = "{:.2f}".format(Dy)
 rot = "{:.2f}".format(rot)
 
-print(Dx+','+Dy+','+rot)      
+print(Dx,Dy,rot)      

@@ -30,7 +30,7 @@ def getTFminiData(rx,num=1):
     dists = []
     while loop<50:
     #print("#############")
-        time.sleep(0.1)    #change the value if needed
+        time.sleep(0.05)    #change the value if needed
         (count, recv) = pi.bb_serial_read(rx)
         if count > 8 :
             for i in range(0, count-9):
