@@ -1,3 +1,0 @@
-translation_vector: 116.37 -102.7
-rotation_angle: -33.56
-marker_id: 7
